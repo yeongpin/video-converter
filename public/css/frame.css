@@ -1,0 +1,246 @@
+/* Custom titlebar */
+.titlebar {
+    height: 32px;
+    background: var(--titlebar-bg, #1a1a1a);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 8px;
+    -webkit-app-region: drag;
+    user-select: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 1000;
+}
+
+.titlebar-left {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.app-icon {
+    width: 16px;
+    height: 16px;
+}
+
+.window-title {
+    color: var(--text-color, #ffffff);
+    font-size: 12px;
+}
+
+.titlebar-controls {
+    display: flex;
+    gap: 4px;
+    -webkit-app-region: no-drag;
+}
+
+.titlebar-button {
+    width: 32px;
+    height: 32px;
+    border: none;
+    background: transparent;
+    color: var(--text-color, #ffffff);
+    font-size: 14px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.titlebar-button:hover {
+    background: var(--button-hover, #333333);
+}
+
+.titlebar-button.close:hover {
+    background: #e81123;
+}
+
+/* Floating buttons */
+.floating-buttons {
+    position: fixed;
+    left: 16px;
+    bottom: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    z-index: 1000;
+}
+
+.floating-button {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    border: none;
+    background: var(--floating-button-bg, #2196f3);
+    color: white;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    transition: transform 0.2s;
+}
+
+.floating-button:hover {
+    transform: scale(1.1);
+}
+
+.floating-button svg {
+    fill: currentColor;
+}
+
+/* Modal */
+.modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100vh;
+    background: rgba(0,0,0,0.5);
+    z-index: 2000;
+    display: none;
+}
+
+.modal-content {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: var(--modal-bg);
+    border-radius: 8px;
+    min-width: 400px;
+    max-width: 600px;
+    max-height: calc(100vh - 64px);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    margin-top: 16px;
+}
+
+.modal-header {
+    padding: 16px 24px;
+    border-bottom: 1px solid var(--border-color);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: var(--modal-bg);
+}
+
+.modal-header h2 {
+    margin: 0;
+    color: var(--text-color);
+    font-size: 20px;
+}
+
+.modal-close {
+    background: none;
+    border: none;
+    font-size: 24px;
+    cursor: pointer;
+    color: var(--text-color);
+    padding: 4px;
+    line-height: 1;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+}
+
+.modal-close:hover {
+    background: var(--hover-bg);
+}
+
+.modal-body {
+    padding: 24px;
+    padding-bottom: 16px;
+    overflow-y: auto;
+    color: var(--text-color);
+    flex: 1;
+    border-radius: 0 0 8px 8px;
+}
+
+/* Theme variables */
+:root {
+    /* Dark theme (default) */
+    --titlebar-bg: #1d1d1f;
+    --text-color: #ffffff;
+    --button-hover: #333333;
+    --floating-button-bg: #0071e3;
+    --modal-bg: #2d2d2d;
+    --border-color: #3d3d3d;
+    --hover-bg: #3d3d3d;
+    --version-color: #0071e3;
+}
+
+[data-theme="light"] {
+    --titlebar-bg: #f5f5f7;
+    --text-color: #1d1d1f;
+    --button-hover: #e0e0e0;
+    --floating-button-bg: #0071e3;
+    --modal-bg: #ffffff;
+    --border-color: #e0e0e0;
+    --hover-bg: #f5f5f7;
+    --version-color: #0071e3;
+}
+
+/* Changelog specific styles */
+.modal-body h1 {
+    font-size: 24px;
+    margin-bottom: 16px;
+    color: var(--text-color);
+}
+
+.modal-body h2 {
+    font-size: 20px;
+    margin: 16px 0 8px;
+    color: var(--version-color); /* 版本号使用蓝色 */
+}
+
+.modal-body h3 {
+    font-size: 16px;
+    margin: 12px 0 8px;
+    color: var(--text-color);
+}
+
+.modal-body p {
+    margin: 8px 0;
+    line-height: 1.5;
+}
+
+.modal-body li {
+    margin: 4px 0 4px 20px;
+    line-height: 1.5;
+}
+
+/* Modal scrollbar */
+.modal-body::-webkit-scrollbar {
+    width: 8px;
+}
+
+.modal-body::-webkit-scrollbar-track {
+    background: var(--modal-bg);
+    border-radius: 0 0 8px 0;
+}
+
+.modal-body::-webkit-scrollbar-thumb {
+    background: var(--button-bg);
+    border-radius: 4px;
+}
+
+.modal-body::-webkit-scrollbar-thumb:hover {
+    background: var(--button-hover);
+}
+
+/* Dark theme adjustments for changelog */
+[data-theme="dark"] .modal-content {
+    background: var(--modal-bg);
+}
+
+[data-theme="dark"] .modal-header {
+    border-bottom-color: var(--border-color);
+} 

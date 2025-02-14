@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'">
+    <title>Video Format Converter</title>
+    <link rel="stylesheet" href="./css/styles.css">
+    <link rel="stylesheet" href="./css/frame.css">
+</head>
+<body>
+    <!-- Titlebar -->
+    <div class="titlebar">
+        <div class="titlebar-left">
+            <img src="./assets/app-icon.svg" class="app-icon" alt="app icon">
+            <span class="window-title">Video Format Converter</span>
+        </div>
+        <div class="titlebar-controls">
+            <button class="titlebar-button" id="minimizeBtn">─</button>
+            <button class="titlebar-button" id="maximizeBtn">□</button>
+            <button class="titlebar-button close" id="closeBtn">×</button>
+        </div>
+    </div>
+
+    <!-- Main content area -->
+    <div class="main-content">
+        <div class="container">
+            <!-- Original container content -->
+            <h1>Video Format Converter</h1>
+            
+            <div class="file-input-container">
+                <input type="file" id="fileInput" accept=".mkv,.mp4,.avi,.mov,.wmv,.flv,.webm,.m4v,.mpg,.mpeg,.ts" class="file-input">
+                <label for="fileInput" class="file-label">Choose Video File</label>
+            </div>
+
+            <div class="options-container">
+                <div class="conversion-mode">
+                    <h3>Output Format</h3>
+                    <select id="formatSelect" class="select-input">
+                        <option value="mp4">MP4</option>
+                        <option value="mkv">MKV</option>
+                        <option value="mov">MOV</option>
+                        <option value="webm">WebM</option>
+                        <option value="avi">AVI</option>
+                        <option value="flv">FLV</option>
+                        <option value="wmv">WMV</option>
+                        <option value="m4v">M4V</option>
+                        <option value="ts">TS</option>
+                        <option value="mts">MTS</option>
+                        <option value="m2ts">M2TS</option>
+                    </select>
+                </div>
+
+                <div class="conversion-mode">
+                    <h3>Encoder</h3>
+                    <select id="encoderSelect" class="select-input">
+                        <option value="h264">H.264 (AVC)</option>
+                        <option value="h265">H.265 (HEVC)</option>
+                    </select>
+                </div>
+
+                <div class="conversion-mode">
+                    <h3>Resolution</h3>
+                    <select id="resolutionSelect" class="select-input">
+                        <option value="original">Original Size</option>
+                        <option value="3840x2160">4K (3840x2160)</option>
+                        <option value="2560x1440">2K (2560x1440)</option>
+                        <option value="1920x1080">Full HD (1920x1080)</option>
+                        <option value="1280x720">HD (1280x720)</option>
+                    </select>
+                    <div class="option-description">
+                        Current: <span id="currentResolution">Checking...</span>
+                    </div>
+                </div>
+
+                <div class="conversion-mode">
+                    <h3>HDR Options</h3>
+                    <select id="hdrSelect" class="select-input">
+                        <option value="keep">Keep Original</option>
+                        <option value="force-hdr">Convert to HDR</option>
+                        <option value="force-sdr">Convert to SDR</option>
+                    </select>
+                    <div class="option-description">
+                        Current: <span id="currentHDR">Checking...</span>
+                        <div class="hdr-warning" style="display: none; color: #ff6b6b;">
+                            Note: Converting to HDR might affect video quality
+                        </div>
+                    </div>
+                </div>
+
+                <div class="conversion-mode">
+                    <h3>Output Location</h3>
+                    <div class="output-path-container">
+                        <input type="text" id="outputPath" class="select-input" readonly>
+                        <button id="changeOutputPath" class="path-button">Change</button>
+                    </div>
+                    <div class="option-description">
+                        Default: Downloads/output
+                    </div>
+                </div>
+
+                <div class="radio-group">
+                    <label class="radio-container">
+                        <input type="radio" name="conversionMode" value="lossless" checked>
+                        <span class="radio-text">Lossless Mode (Fast, Original Quality)</span>
+                        <div class="option-description">
+                            Only changes container format without re-encoding. Fast but may have compatibility issues.
+                        </div>
+                    </label>
+                    <label class="radio-container">
+                        <input type="radio" name="conversionMode" value="reEncode">
+                        <span class="radio-text">Re-encode Mode (Better Compatibility)</span>
+                        <div class="option-description">
+                            Re-encodes video and audio for better compatibility. Slower but more compatible.
+                        </div>
+                    </label>
+                </div>
+
+                <div id="encodeOptions" class="encode-options" style="display: none;">
+                    <h3>Encoding Options</h3>
+                    <div class="option-group">
+                        <label>
+                            Quality (CRF)
+                            <select id="qualitySelect" class="select-input">
+                                <option value="18">High (18)</option>
+                                <option value="23" selected>Medium (23)</option>
+                                <option value="28">Low (28)</option>
+                            </select>
+                        </label>
+                        <div class="option-description">Lower value = Higher quality but larger file size</div>
+                    </div>
+                    <div class="option-group">
+                        <label>
+                            Encoding Speed
+                            <select id="speedSelect" class="select-input">
+                                <option value="veryslow">Very Slow (Best Quality)</option>
+                                <option value="slow">Slow</option>
+                                <option value="medium" selected>Medium</option>
+                                <option value="fast">Fast</option>
+                                <option value="veryfast">Very Fast</option>
+                            </select>
+                        </label>
+                        <div class="option-description">Slower = Better compression but takes longer</div>
+                    </div>
+                </div>
+
+                <div class="mode-description" id="modeDescription">
+                    Current Mode: Lossless - Only converting container from your video format to the selected format.
+                </div>
+            </div>
+
+            <button id="convertBtn" class="convert-btn" disabled>Convert Video</button>
+
+            <div class="progress-container">
+                <div class="progress-bar">
+                    <div class="progress" id="progress"></div>
+                </div>
+                <div class="progress-text" id="progressText">0%</div>
+                <div class="progress-details">
+                    <span id="progressSpeed"></span>
+                    <span id="progressTime"></span>
+                    <span id="progressSize"></span>
+                    <span id="progressEta"></span>
+                </div>
+            </div>
+
+            <div id="status" class="status"></div>
+        </div>
+
+        <!-- Floating buttons -->
+        <div class="floating-buttons">
+            <button class="floating-button theme-toggle" id="themeToggle">
+                <svg width="24" height="24" viewBox="0 0 24 24">
+                    <path class="sun-icon" d="M12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.65 0-3 1.35-3 3s1.35 3 3 3 3-1.35 3-3-1.35-3-3-3z"/>
+                    <path class="moon-icon" d="M12 3c-4.97 0-9 4.03-9 9s4.03 9 9 9 9-4.03 9-9c0-.46-.04-.92-.1-1.36-.98 1.37-2.58 2.26-4.4 2.26-3.03 0-5.5-2.47-5.5-5.5 0-1.82.89-3.42 2.26-4.4-.44-.06-.9-.1-1.36-.1z"/>
+                </svg>
+            </button>
+            <button class="floating-button changelog" id="changelogBtn">
+                <svg width="24" height="24" viewBox="0 0 24 24">
+                    <path d="M14 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V8l-6-6zm-1 7V3.5L18.5 9H13z"/>
+                </svg>
+            </button>
+            <a href="https://github.com/yeongpin/video-converter" target="_blank" class="floating-button github">
+                <svg width="24" height="24" viewBox="0 0 24 24">
+                    <path d="M12,2.2467A10.00042,10.00042,0,0,0,8.83752,21.73419c.5.08752.6875-.21247.6875-.475,0-.23749-.01251-1.025-.01251-1.86249C7,19.85919,6.35,18.78423,6.15,18.22173A3.636,3.636,0,0,0,5.125,16.8092c-.35-.1875-.85-.65-.01251-.66248A2.00117,2.00117,0,0,1,6.65,17.17169a2.13742,2.13742,0,0,0,2.91248.825A2.10376,2.10376,0,0,1,10.2,16.65923c-2.225-.25-4.55-1.11254-4.55-4.9375a3.89187,3.89187,0,0,1,1.025-2.6875,3.59373,3.59373,0,0,1,.1-2.65s.83747-.26251,2.75,1.025a9.42747,9.42747,0,0,1,5,0c1.91248-1.3,2.75-1.025,2.75-1.025a3.59323,3.59323,0,0,1,.1,2.65,3.869,3.869,0,0,1,1.025,2.6875c0,3.83747-2.33752,4.6875-4.5625,4.9375a2.36814,2.36814,0,0,1,.675,1.85c0,1.33752-.01251,2.41248-.01251,2.75,0,.26251.1875.575.6875.475A10.0053,10.0053,0,0,0,12,2.2467Z"/>
+                </svg>
+            </a>
+        </div>
+
+        <!-- Modal -->
+        <div class="modal" id="changelogModal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2>Changelog</h2>
+                    <button class="modal-close" id="closeModal">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <div class="loading">Loading changelog...</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="completion-dialog" id="completionDialog">
+            <div class="dialog-title">Conversion Completed</div>
+            <div class="dialog-content" id="dialogContent"></div>
+            <div class="dialog-buttons">
+                <button class="dialog-button secondary-button" id="openFolderBtn">Open Folder</button>
+                <button class="dialog-button primary-button" id="openFileBtn">Open File</button>
+                <button class="dialog-button secondary-button" id="closeDialogBtn">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="./js/frame.js"></script>
+    <script src="./js/converter.js"></script>
+</body>
+</html> 

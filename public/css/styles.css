@@ -1,0 +1,404 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+:root {
+    /* Light theme variables */
+    --bg-color: #f5f5f7;
+    --text-color: #1d1d1f;
+    --container-bg: white;
+    --button-bg: #0071e3;
+    --button-hover: #0077ed;
+    --button-disabled: #999;
+    --progress-bg: #e0e0e0;
+    --description-color: #666;
+    --border-color: #d1d1d1;
+    --hover-bg: #f5f5f7;
+    --shadow-color: rgba(0, 0, 0, 0.1);
+}
+
+[data-theme="dark"] {
+    --bg-color: #1d1d1f;
+    --text-color: #f5f5f7;
+    --container-bg: #2d2d2d;
+    --button-bg: #0071e3;
+    --button-hover: #0077ed;
+    --button-disabled: #4a4a4a;
+    --progress-bg: #3d3d3d;
+    --description-color: #a1a1a1;
+    --border-color: #3d3d3d;
+    --hover-bg: #3d3d3d;
+    --shadow-color: rgba(0, 0, 0, 0.3);
+}
+
+/* Reset body styles */
+body {
+    margin: 0;
+    padding: 0;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    line-height: 1.5;
+    height: 100vh;
+    overflow: hidden; /* Prevent body scroll */
+}
+
+/* Fixed titlebar */
+.titlebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 1000;
+}
+
+/* Main content area */
+.main-content {
+    height: calc(100vh - 32px); /* Subtract titlebar height */
+    margin-top: 32px; /* Add margin for titlebar */
+    overflow-y: auto; /* Enable scrolling */
+    background-color: var(--bg-color);
+    position: relative; /* For floating buttons positioning */
+}
+
+.container {
+    max-width: 600px;
+    margin: 20px auto;
+    padding: 20px;
+    background-color: var(--container-bg);
+    border-radius: 12px;
+    box-shadow: 0 2px 10px var(--shadow-color);
+}
+
+h1 {
+    text-align: center;
+    margin-bottom: 30px;
+    font-weight: 600;
+    color: var(--text-color);
+}
+
+.file-input-container {
+    margin-bottom: 20px;
+}
+
+.file-input {
+    display: none;
+}
+
+.file-label {
+    display: block;
+    padding: 12px 20px;
+    background-color: var(--button-bg);
+    color: white;
+    border-radius: 8px;
+    cursor: pointer;
+    text-align: center;
+    transition: background-color 0.3s;
+}
+
+.file-label:hover {
+    background-color: var(--button-hover);
+}
+
+.options-container {
+    margin-bottom: 20px;
+}
+
+.checkbox-container {
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+}
+
+.convert-btn {
+    width: 100%;
+    padding: 12px;
+    background-color: var(--button-bg);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 16px;
+    transition: background-color 0.3s;
+}
+
+.convert-btn:disabled {
+    background-color: var(--button-disabled);
+    cursor: not-allowed;
+}
+
+.convert-btn:hover:not(:disabled) {
+    background-color: var(--button-hover);
+}
+
+.progress-container {
+    margin-top: 20px;
+    display: none;
+}
+
+.progress-bar {
+    width: 100%;
+    height: 8px;
+    background-color: var(--progress-bg);
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.progress {
+    width: 0%;
+    height: 100%;
+    background-color: var(--button-bg);
+    transition: width 0.3s;
+}
+
+.progress-text {
+    text-align: center;
+    margin-top: 8px;
+    font-size: 14px;
+    color: var(--text-color);
+}
+
+.status {
+    margin-top: 20px;
+    text-align: center;
+    color: var(--text-color);
+}
+
+.option-description {
+    font-size: 12px;
+    color: var(--description-color);
+    margin-left: 24px;
+    margin-top: 4px;
+}
+
+.mode-description {
+    margin-top: 10px;
+    padding: 8px;
+    background-color: var(--hover-bg);
+    border-radius: 6px;
+    font-size: 13px;
+    color: var(--text-color);
+}
+
+.conversion-mode h3,
+.encode-options h3 {
+    font-size: 16px;
+    margin-bottom: 12px;
+    color: var(--text-color);
+}
+
+.radio-group {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.radio-container {
+    display: flex;
+    align-items: flex-start;
+    cursor: pointer;
+    padding: 8px;
+    border-radius: 6px;
+    transition: background-color 0.2s;
+}
+
+.radio-container:hover {
+    background-color: var(--hover-bg);
+}
+
+.radio-text {
+    margin-left: 8px;
+    font-weight: 500;
+    color: var(--text-color);
+}
+
+.encode-options {
+    margin-top: 20px;
+    padding-top: 20px;
+    border-top: 1px solid var(--border-color);
+}
+
+.option-group {
+    margin-bottom: 16px;
+}
+
+.select-input {
+    display: block;
+    width: 100%;
+    padding: 8px;
+    margin-top: 4px;
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    background-color: var(--container-bg);
+    font-size: 14px;
+    color: var(--text-color);
+}
+
+.select-input:focus {
+    outline: none;
+    border-color: var(--button-bg);
+}
+
+.hdr-badge {
+    display: inline-block;
+    padding: 2px 6px;
+    background-color: #ffd700;
+    color: #000;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 600;
+    margin-left: 8px;
+}
+
+.progress-details {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 8px;
+    font-size: 12px;
+    color: var(--description-color);
+}
+
+.current-resolution {
+    font-size: 14px;
+    color: var(--description-color);
+    margin-top: 4px;
+}
+
+.resolution-warning {
+    color: #ff6b6b;
+    font-size: 12px;
+    margin-top: 4px;
+}
+
+/* Loading animation */
+.loading {
+    text-align: center;
+    color: var(--text-color);
+    padding: 20px;
+}
+
+/* Scrollbar customization */
+::-webkit-scrollbar {
+    width: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: var(--bg-color);
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--button-bg);
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--button-hover);
+}
+
+/* Customize scrollbar for main content */
+.main-content::-webkit-scrollbar {
+    width: 8px;
+}
+
+.main-content::-webkit-scrollbar-track {
+    background: var(--bg-color);
+}
+
+.main-content::-webkit-scrollbar-thumb {
+    background: var(--button-bg);
+    border-radius: 4px;
+}
+
+.main-content::-webkit-scrollbar-thumb:hover {
+    background: var(--button-hover);
+}
+
+.output-path-container {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.path-button {
+    padding: 8px 16px;
+    background-color: var(--button-bg);
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 14px;
+    white-space: nowrap;
+}
+
+.path-button:hover {
+    background-color: var(--button-hover);
+}
+
+#outputPath {
+    flex: 1;
+    cursor: default;
+    background-color: var(--hover-bg);
+}
+
+/* 完成提示对话框样式 */
+.completion-dialog {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: var(--container-bg);
+    padding: 24px;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+    z-index: 3000;
+    display: none;
+    min-width: 400px;
+}
+
+.dialog-title {
+    font-size: 18px;
+    font-weight: 600;
+    margin-bottom: 16px;
+    color: var(--text-color);
+}
+
+.dialog-content {
+    margin-bottom: 20px;
+    color: var(--text-color);
+    word-break: break-all;
+}
+
+.dialog-buttons {
+    display: flex;
+    gap: 8px;
+    justify-content: flex-end;
+}
+
+.dialog-button {
+    padding: 8px 16px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: background-color 0.2s;
+}
+
+.primary-button {
+    background-color: var(--button-bg);
+    color: white;
+}
+
+.primary-button:hover {
+    background-color: var(--button-hover);
+}
+
+.secondary-button {
+    background-color: var(--hover-bg);
+    color: var(--text-color);
+}
+
+.secondary-button:hover {
+    background-color: var(--border-color);
+} 
