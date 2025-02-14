@@ -2,17 +2,22 @@ const ffmpeg = require('fluent-ffmpeg');
 const path = require('path');
 const { BrowserWindow, app } = require('electron');
 const fs = require('fs');
+const isDev = require('electron-is-dev');
 
 // get ffmpeg and ffprobe path
 function getBinaryPath(binaryName) {
-    if (process.env.NODE_ENV === 'development') {
-        // development use global installed ffmpeg
+    if (isDev) {
+        // development environment
+        const devPath = path.join(__dirname, '../../external/ffmpeg/bin', `${binaryName}${process.platform === 'win32' ? '.exe' : ''}`);
+        if (fs.existsSync(devPath)) {
+            return devPath;
+        }
+        // fallback to global ffmpeg if not found in development path
         return binaryName;
     } else {
-        // production use bundled ffmpeg
+        // production environment
         const resourcesPath = process.resourcesPath;
-        const platform = process.platform;
-        const extension = platform === 'win32' ? '.exe' : '';
+        const extension = process.platform === 'win32' ? '.exe' : '';
         return path.join(resourcesPath, 'external', 'ffmpeg', 'bin', `${binaryName}${extension}`);
     }
 }
@@ -20,6 +25,9 @@ function getBinaryPath(binaryName) {
 // set ffmpeg path
 const ffmpegPath = getBinaryPath('ffmpeg');
 const ffprobePath = getBinaryPath('ffprobe');
+
+console.log('FFmpeg Path:', ffmpegPath);
+console.log('FFprobe Path:', ffprobePath);
 
 ffmpeg.setFfmpegPath(ffmpegPath);
 ffmpeg.setFfprobePath(ffprobePath);
@@ -111,15 +119,6 @@ async function convertVideo(inputPath, outputPath, options = {}) {
         const mainWindow = BrowserWindow.getFocusedWindow();
         let startTime;
         
-        // get input file name (without extension) and extension
-        const inputFileName = path.basename(inputPath, path.extname(inputPath));
-        const outputExt = path.extname(inputPath);
-        // build new output file name
-        const outputFileName = `${inputFileName}-converted${outputExt}`;
-        // ensure output path exists and create full output path
-        fs.mkdirSync(outputPath, { recursive: true });
-        const finalOutputPath = path.join(outputPath, outputFileName);
-
         const {
             encoder = 'h264',
             preset = 'medium',
@@ -127,8 +126,53 @@ async function convertVideo(inputPath, outputPath, options = {}) {
             isLossless = false,
             audioBitrate = '320k',
             resolution = 'original',
-            hdrMode = 'keep'
+            hdrMode = 'keep',
+            format = 'mp4'  // 添加format选项，默认为mp4
         } = options;
+
+        // get input file name (without extension)
+        const inputFileName = path.basename(inputPath, path.extname(inputPath));
+        
+        // 根据选择的格式设置输出扩展名
+        let outputExt;
+        switch (format.toLowerCase()) {
+            case 'mp4':
+                outputExt = '.mp4';
+                break;
+            case 'mkv':
+                outputExt = '.mkv';
+                break;
+            case 'mov':
+                outputExt = '.mov';
+                break;
+            case 'webm':
+                outputExt = '.webm';
+                break;
+            case 'avi':
+                outputExt = '.avi';
+                break;
+            case 'flv':
+                outputExt = '.flv';
+                break;
+            case 'wmv':
+                outputExt = '.wmv';
+                break;
+            case 'm4v':
+                outputExt = '.m4v';
+                break;
+            case 'ts':
+                outputExt = '.ts';
+                break;
+            default:
+                outputExt = '.mp4';  // 默认使用mp4
+        }
+
+        // build new output file name with correct extension
+        const outputFileName = `${inputFileName}-converted${outputExt}`;
+        
+        // ensure output path exists and create full output path
+        fs.mkdirSync(outputPath, { recursive: true });
+        const finalOutputPath = path.join(outputPath, outputFileName);
 
         try {
             // show current resolution
@@ -148,12 +192,20 @@ async function convertVideo(inputPath, outputPath, options = {}) {
                     throw new Error(`Unsupported encoder: ${encoder}`);
                 }
 
+                // 根据输出格式设置编码器
+                let videoCodec = encoderConfig.codec;
+                if (format === 'webm') {
+                    videoCodec = 'libvpx-vp9';
+                } else if (format === 'wmv') {
+                    videoCodec = 'wmv2';
+                }
+
                 const baseOptions = [
-                    '-c:v', encoderConfig.codec,
+                    '-c:v', videoCodec,
                     '-preset', preset,
                     '-crf', crf,
                     '-movflags', '+faststart',
-                    '-c:a', 'aac',
+                    '-c:a', format === 'webm' ? 'libvorbis' : 'aac',
                     '-b:a', audioBitrate
                 ];
 
@@ -193,30 +245,48 @@ async function convertVideo(inputPath, outputPath, options = {}) {
                     });
                 })
                 .on('progress', (progress) => {
-                    if (progress.percent) {
-                        const currentTime = Date.now();
-                        const elapsedTime = (currentTime - startTime) / 1000;
-                        const percentComplete = progress.percent;
-                        const estimatedTotalTime = (elapsedTime / percentComplete) * 100;
-                        const remainingTime = estimatedTotalTime - elapsedTime;
-                        const eta = new Date(remainingTime * 1000).toISOString().substr(11, 8);
-
-                        mainWindow.webContents.send('conversion-progress', {
-                            percent: Math.round(percentComplete),
-                            speed: progress.currentFps ? `${progress.currentFps} fps` : 'N/A',
-                            time: progress.timemark,
-                            size: progress.targetSize ? `${Math.round(progress.targetSize / 1024 / 1024)}MB` : 'N/A',
-                            eta: eta,
-                            status: 'Converting...'
-                        });
+                    const currentTime = Date.now();
+                    const elapsedTime = (currentTime - startTime) / 1000; // 转换为秒
+                    
+                    // 计算预计剩余时间（ETA）
+                    const percent = progress.percent || 0;
+                    let eta = 'calculating...';
+                    if (percent > 0) {
+                        const totalTime = (elapsedTime * 100) / percent;
+                        const remainingTime = totalTime - elapsedTime;
+                        eta = formatTime(remainingTime);
                     }
+
+                    // 格式化当前处理时间
+                    const processedTime = formatTime(elapsedTime);
+
+                    // 计算文件大小
+                    const size = progress.targetSize 
+                        ? `${(progress.targetSize / 1024 / 1024).toFixed(2)}MB`
+                        : 'calculating...';
+
+                    mainWindow.webContents.send('conversion-progress', {
+                        percent: Math.round(percent),
+                        speed: progress.currentFps ? `${progress.currentFps} fps` : 'N/A',
+                        time: processedTime,
+                        size: size,
+                        eta: eta,
+                        status: 'Converting...'
+                    });
                 })
                 .on('end', () => {
+                    const endTime = Date.now();
+                    const totalTime = formatTime((endTime - startTime) / 1000);
+                    
+                    // 获取输出文件大小
+                    const stats = fs.statSync(finalOutputPath);
+                    const finalSize = `${(stats.size / 1024 / 1024).toFixed(2)}MB`;
+
                     mainWindow.webContents.send('conversion-progress', {
                         percent: 100,
                         speed: 'Done',
-                        time: videoInfo.duration,
-                        size: `${Math.round(videoInfo.size / 1024 / 1024)}MB`,
+                        time: totalTime,
+                        size: finalSize,
                         eta: '00:00:00',
                         status: 'Completed!',
                         outputPath: finalOutputPath
@@ -225,18 +295,24 @@ async function convertVideo(inputPath, outputPath, options = {}) {
                 })
                 .on('error', (err) => {
                     console.error('FFmpeg error:', err);
-                    mainWindow.webContents.send('conversion-error', err.message);
                     reject(err);
-                });
-
-            command.run();
-
+                })
+                .run();
         } catch (error) {
-            console.error('Conversion setup error:', error);
-            mainWindow.webContents.send('conversion-error', error.message);
+            console.error('Conversion error:', error);
             reject(error);
         }
     });
+}
+
+// 时间格式化函数
+function formatTime(seconds) {
+    seconds = Math.round(seconds);
+    const hours = Math.floor(seconds / 3600);
+    const minutes = Math.floor((seconds % 3600) / 60);
+    const remainingSeconds = seconds % 60;
+    
+    return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(remainingSeconds).padStart(2, '0')}`;
 }
 
 module.exports = {

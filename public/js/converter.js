@@ -144,14 +144,15 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             const options = {
                 inputPath: selectedFile.path,
-                outputPath: currentOutputPath,  // use selected output directory
+                outputPath: currentOutputPath,
                 options: {
                     encoder: encoderSelect.value,
                     isLossless: document.querySelector('input[name="conversionMode"]:checked').value === 'lossless',
                     preset: speedSelect.value,
                     crf: qualitySelect.value,
                     resolution: resolutionSelect.value,
-                    hdrMode: hdrSelect.value
+                    hdrMode: hdrSelect.value,
+                    format: formatSelect.value
                 }
             };
 
@@ -246,7 +247,8 @@ async function convertVideo() {
             preset: speedSelect.value,
             crf: qualitySelect.value,
             resolution: resolutionSelect.value,
-            hdrMode: hdrSelect.value
+            hdrMode: hdrSelect.value,
+            format: formatSelect.value
         }
     };
     

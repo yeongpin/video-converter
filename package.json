@@ -1,6 +1,6 @@
 {
   "name": "video-converter",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "A versatile video format converter using Electron and FFmpeg",
   "main": "src/main/main.js",
   "author": "yeongpin",

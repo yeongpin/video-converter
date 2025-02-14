@@ -1,5 +1,19 @@
 # Changelog
 
+## [1.0.2] - 2025-02-13
+### Added
+- GitHub button
+- Open external link
+- Completion dialog
+- Fix some bugs
+- Fixed the output format
+- Fixed the output path
+- Fixed the progress bar
+- Fixed the resolution
+- Fixed the quality
+- Fixed the speed
+- Fixed the theme
+
 ## [1.0.1] - 2025-02-13
 ### Added
 - Completion dialog
