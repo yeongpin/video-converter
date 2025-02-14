@@ -21,30 +21,39 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '18'
-          cache: 'npm'
           
+      - name: Install yarn
+        run: npm install -g yarn
+        
       - name: Get version from tag
         id: get_version
         run: echo "VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_ENV
         shell: bash
 
-      # Windows特定的权限修复
-      - name: Fix Windows permissions
+      # Windows特定的设置
+      - name: Windows Setup
         if: matrix.os == 'windows-latest'
         run: |
-          npm cache clean --force
-          Remove-Item -Recurse -Force node_modules -ErrorAction SilentlyContinue
+          yarn config set network-timeout 300000
+          yarn cache clean
         shell: pwsh
+        
+      # macOS和Linux的设置
+      - name: Unix Setup
+        if: matrix.os != 'windows-latest'
+        run: |
+          yarn cache clean
+        shell: bash
         
       - name: Install dependencies
         run: |
-          npm install --no-optional
-          npm install --save-dev electron-builder@latest
+          yarn install --network-timeout 300000
+          yarn add electron-builder@latest --dev
         env:
           ELECTRON_BUILDER_ALLOW_UNRESOLVED_DEPENDENCIES: true
-        
+          
       - name: Build application
-        run: npm run build
+        run: yarn build
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           ELECTRON_BUILDER_ALLOW_UNRESOLVED_DEPENDENCIES: true
