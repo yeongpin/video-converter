@@ -12,53 +12,34 @@ jobs:
     strategy:
       matrix:
         os: [windows-latest, macos-latest, ubuntu-latest]
-        
+        node-version: [18.x]
+
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-        
-      - name: Setup Node.js
+      - uses: actions/checkout@v4
+      
+      - name: Use Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v4
         with:
-          node-version: '18'
+          node-version: ${{ matrix.node-version }}
+          cache: 'npm'
           
-      - name: Install yarn
-        run: npm install -g yarn
-        
       - name: Get version from tag
         id: get_version
         run: echo "VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_ENV
         shell: bash
 
-      # Windows特定的设置
-      - name: Windows Setup
-        if: matrix.os == 'windows-latest'
-        run: |
-          yarn config set network-timeout 300000
-          yarn cache clean
-        shell: pwsh
+      # Clean install dependencies
+      - name: Install Dependencies
+        run: npm ci
         
-      # macOS和Linux的设置
-      - name: Unix Setup
-        if: matrix.os != 'windows-latest'
-        run: |
-          yarn cache clean
-        shell: bash
-        
-      - name: Install dependencies
-        run: |
-          yarn install --network-timeout 300000
-          yarn add electron-builder@latest --dev
-        env:
-          ELECTRON_BUILDER_ALLOW_UNRESOLVED_DEPENDENCIES: true
-          
-      - name: Build application
-        run: yarn build
+      # Build the application
+      - name: Build Application
+        run: npm run build
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          ELECTRON_BUILDER_ALLOW_UNRESOLVED_DEPENDENCIES: true
           
-      - name: Rename artifacts
+      # Rename and organize artifacts
+      - name: Process Artifacts
         shell: bash
         run: |
           mkdir -p ./artifacts
@@ -71,7 +52,8 @@ jobs:
             mv dist/*.AppImage "./artifacts/video_converter_${{ env.VERSION }}_linux.AppImage" || true
           fi
           
-      - name: Upload artifacts
+      # Upload build artifacts
+      - name: Upload Artifacts
         uses: actions/upload-artifact@v4
         with:
           name: ${{ matrix.os }}-artifacts
@@ -85,12 +67,12 @@ jobs:
       contents: write
     
     steps:
-      - name: Download artifacts
+      - name: Download Artifacts
         uses: actions/download-artifact@v4
         with:
           path: artifacts
           
-      - name: Display structure of downloaded files
+      - name: List Files
         run: ls -R
         working-directory: artifacts
         
