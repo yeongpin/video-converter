@@ -38,20 +38,31 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           
+      # List dist directory contents
+      - name: List dist directory
+        shell: bash
+        run: |
+          echo "Dist directory contents:"
+          ls -la dist/
+        
       # Rename and organize artifacts
       - name: Process Artifacts
         shell: bash
         run: |
           mkdir -p ./artifacts
           if [ "${{ matrix.os }}" = "windows-latest" ]; then
-            mv dist/*-setup.exe "./artifacts/video_converter_${{ env.VERSION }}_win.exe" || true
-            mv dist/*-portable.exe "./artifacts/video_converter_${{ env.VERSION }}_win_portable.exe" || true
+            mv "dist/Video Converter Setup"*.exe "./artifacts/video_converter_${{ env.VERSION }}_win_setup.exe" || true
+            mv "dist/Video Converter "[0-9]*.exe "./artifacts/video_converter_${{ env.VERSION }}_win_portable.exe" || true
           elif [ "${{ matrix.os }}" = "macos-latest" ]; then
-            mv dist/*.dmg "./artifacts/video_converter_${{ env.VERSION }}_mac.dmg" || true
+            mv "dist/Video Converter"*.dmg "./artifacts/video_converter_${{ env.VERSION }}_mac.dmg" || true
           else
-            mv dist/*.AppImage "./artifacts/video_converter_${{ env.VERSION }}_linux.AppImage" || true
+            mv "dist/Video Converter"*.AppImage "./artifacts/video_converter_${{ env.VERSION }}_linux.AppImage" || true
           fi
           
+          # 显示artifacts目录内容以验证
+          echo "Artifacts directory contents:"
+          ls -la ./artifacts/
+        
       # Upload build artifacts
       - name: Upload Artifacts
         uses: actions/upload-artifact@v4
