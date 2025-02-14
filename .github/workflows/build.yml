@@ -1,0 +1,81 @@
+name: Build and Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  build:
+    runs-on: ${{ matrix.os }}
+    
+    strategy:
+      matrix:
+        os: [windows-latest, macos-latest, ubuntu-latest]
+        
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+        
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+          
+      - name: Get version from tag
+        id: get_version
+        run: echo "VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_ENV
+        shell: bash
+        
+      - name: Install dependencies
+        run: npm install
+        
+      - name: Build application
+        run: npm run build
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          
+      - name: Rename artifacts
+        shell: bash
+        run: |
+          if [ "${{ matrix.os }}" = "windows-latest" ]; then
+            mv dist/*-setup.exe "dist/video_converter_${{ env.VERSION }}_win.exe"
+            mv dist/*-portable.exe "dist/video_converter_${{ env.VERSION }}_win_portable.exe"
+          elif [ "${{ matrix.os }}" = "macos-latest" ]; then
+            mv dist/*.dmg "dist/video_converter_${{ env.VERSION }}_mac.dmg"
+          else
+            mv dist/*.AppImage "dist/video_converter_${{ env.VERSION }}_linux.AppImage"
+          fi
+          
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: ${{ matrix.os }}-artifacts
+          path: dist/*
+          
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Download artifacts
+        uses: actions/download-artifact@v3
+        
+      - name: Delete existing release
+        uses: dev-drprasad/delete-tag-and-release@v0.2.1
+        with:
+          tag_name: ${{ github.ref_name }}
+          delete_release: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
+        with:
+          name: Video Converter ${{ github.ref_name }}
+          files: |
+            *-artifacts/*
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} 
