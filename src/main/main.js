@@ -119,4 +119,9 @@ ipcMain.handle('open-file', async (event, path) => {
 
 ipcMain.handle('open-folder', async (event, path) => {
     shell.showItemInFolder(path);
+});
+
+// 添加外部链接处理程序
+ipcMain.handle('open-external-link', async (event, url) => {
+    shell.openExternal(url);
 }); 

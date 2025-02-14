@@ -9,6 +9,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
     getDefaultOutputPath: () => ipcRenderer.invoke('get-default-output-path'),
     openFile: (path) => ipcRenderer.invoke('open-file', path),
     openFolder: (path) => ipcRenderer.invoke('open-folder', path),
+    openExternalLink: (url) => ipcRenderer.invoke('open-external-link', url),
 });
 
 contextBridge.exposeInMainWorld('electron', {
