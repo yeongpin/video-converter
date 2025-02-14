@@ -3,13 +3,23 @@ const path = require('path');
 const { BrowserWindow, app } = require('electron');
 const fs = require('fs');
 
-// 設置 ffmpeg 路徑
-const ffmpegPath = app.isPackaged
-    ? path.join(process.resourcesPath, 'external/ffmpeg/bin/ffmpeg.exe')
-    : path.join(__dirname, '../../external/ffmpeg/bin/ffmpeg.exe');
-const ffprobePath = app.isPackaged
-    ? path.join(process.resourcesPath, 'external/ffmpeg/bin/ffprobe.exe')
-    : path.join(__dirname, '../../external/ffmpeg/bin/ffprobe.exe');
+// 获取ffmpeg和ffprobe的路径
+function getBinaryPath(binaryName) {
+    if (process.env.NODE_ENV === 'development') {
+        // 开发环境使用全局安装的ffmpeg
+        return binaryName;
+    } else {
+        // 生产环境使用打包的ffmpeg
+        const resourcesPath = process.resourcesPath;
+        const platform = process.platform;
+        const extension = platform === 'win32' ? '.exe' : '';
+        return path.join(resourcesPath, 'external', 'ffmpeg', 'bin', `${binaryName}${extension}`);
+    }
+}
+
+// 设置ffmpeg路径
+const ffmpegPath = getBinaryPath('ffmpeg');
+const ffprobePath = getBinaryPath('ffprobe');
 
 ffmpeg.setFfmpegPath(ffmpegPath);
 ffmpeg.setFfprobePath(ffprobePath);

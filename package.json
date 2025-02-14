@@ -3,9 +3,11 @@
   "version": "1.0.1",
   "description": "A versatile video format converter using Electron and FFmpeg",
   "main": "src/main/main.js",
+  "author": "yeongpin",
   "scripts": {
     "start": "electron .",
-    "build": "electron-builder"
+    "build": "electron-builder",
+    "pack": "electron-builder --dir"
   },
   "dependencies": {
     "fluent-ffmpeg": "^2.1.2",
@@ -17,9 +19,65 @@
     "electron-builder": "^24.9.1"
   },
   "build": {
+    "appId": "com.yeongpin.videoconverter",
+    "productName": "Video Converter",
+    "directories": {
+      "output": "dist"
+    },
     "files": [
       "**/*",
-      "external/ffmpeg/bin/*"
+      "!external/ffmpeg/**",
+      "!**/node_modules/*/{CHANGELOG.md,README.md,README,readme.md,readme}",
+      "!**/node_modules/*/{test,__tests__,tests,powered-test,example,examples}",
+      "!**/node_modules/*.d.ts",
+      "!**/node_modules/.bin",
+      "!**/*.{iml,o,hprof,orig,pyc,pyo,rbc,swp,csproj,sln,xproj}",
+      "!.editorconfig",
+      "!**/._*",
+      "!**/{.DS_Store,.git,.hg,.svn,CVS,RCS,SCCS,.gitignore,.gitattributes}",
+      "!**/{__pycache__,thumbs.db,.flowconfig,.idea,.vs,.nyc_output}",
+      "!**/{appveyor.yml,.travis.yml,circle.yml}",
+      "!**/{npm-debug.log,yarn.lock,.yarn-integrity,.yarn-metadata.json}"
+    ],
+    "win": {
+      "target": [
+        {
+          "target": "portable",
+          "arch": [
+            "x64"
+          ]
+        },
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
+      "icon": "./public/assets/app-icon.ico"
+    },
+    "nsis": {
+      "oneClick": false,
+      "perMachine": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "Video Converter",
+      "installerIcon": "./public/assets/app-icon.ico",
+      "uninstallerIcon": "./public/assets/app-icon.ico",
+      "installerHeaderIcon": "./public/assets/app-icon.ico"
+    },
+    "asar": true,
+    "asarUnpack": [
+      "node_modules/fluent-ffmpeg/**/*",
+      "external/ffmpeg/bin/**"
+    ],
+    "extraResources": [
+      {
+        "from": "external/ffmpeg/bin",
+        "to": "external/ffmpeg/bin",
+        "filter": ["**/*"]
+      }
     ]
   }
 } 
