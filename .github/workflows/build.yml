@@ -21,60 +21,75 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '18'
+          cache: 'npm'
           
       - name: Get version from tag
         id: get_version
         run: echo "VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_ENV
         shell: bash
+
+      # Windows特定的权限修复
+      - name: Fix Windows permissions
+        if: matrix.os == 'windows-latest'
+        run: |
+          npm cache clean --force
+          Remove-Item -Recurse -Force node_modules -ErrorAction SilentlyContinue
+        shell: pwsh
         
       - name: Install dependencies
-        run: npm install
+        run: |
+          npm install --no-optional
+          npm install --save-dev electron-builder@latest
+        env:
+          ELECTRON_BUILDER_ALLOW_UNRESOLVED_DEPENDENCIES: true
         
       - name: Build application
         run: npm run build
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          ELECTRON_BUILDER_ALLOW_UNRESOLVED_DEPENDENCIES: true
           
       - name: Rename artifacts
         shell: bash
         run: |
+          mkdir -p ./artifacts
           if [ "${{ matrix.os }}" = "windows-latest" ]; then
-            mv dist/*-setup.exe "dist/video_converter_${{ env.VERSION }}_win.exe"
-            mv dist/*-portable.exe "dist/video_converter_${{ env.VERSION }}_win_portable.exe"
+            mv dist/*-setup.exe "./artifacts/video_converter_${{ env.VERSION }}_win.exe" || true
+            mv dist/*-portable.exe "./artifacts/video_converter_${{ env.VERSION }}_win_portable.exe" || true
           elif [ "${{ matrix.os }}" = "macos-latest" ]; then
-            mv dist/*.dmg "dist/video_converter_${{ env.VERSION }}_mac.dmg"
+            mv dist/*.dmg "./artifacts/video_converter_${{ env.VERSION }}_mac.dmg" || true
           else
-            mv dist/*.AppImage "dist/video_converter_${{ env.VERSION }}_linux.AppImage"
+            mv dist/*.AppImage "./artifacts/video_converter_${{ env.VERSION }}_linux.AppImage" || true
           fi
           
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
           name: ${{ matrix.os }}-artifacts
-          path: dist/*
+          path: artifacts/*
+          retention-days: 1
           
   release:
     needs: build
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     
     steps:
       - name: Download artifacts
         uses: actions/download-artifact@v4
-        
-      - name: Delete existing release
-        uses: dev-drprasad/delete-tag-and-release@v1
         with:
-          tag_name: ${{ github.ref_name }}
-          delete_release: true
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          path: artifacts
           
+      - name: Display structure of downloaded files
+        run: ls -R
+        working-directory: artifacts
+        
       - name: Create Release
         uses: softprops/action-gh-release@v2
         with:
           name: Video Converter ${{ github.ref_name }}
-          files: |
-            *-artifacts/*
+          files: artifacts/**/*
           draft: false
           prerelease: false
         env:
