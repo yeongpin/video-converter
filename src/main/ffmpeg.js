@@ -3,13 +3,13 @@ const path = require('path');
 const { BrowserWindow, app } = require('electron');
 const fs = require('fs');
 
-// 获取ffmpeg和ffprobe的路径
+// get ffmpeg and ffprobe path
 function getBinaryPath(binaryName) {
     if (process.env.NODE_ENV === 'development') {
-        // 开发环境使用全局安装的ffmpeg
+        // development use global installed ffmpeg
         return binaryName;
     } else {
-        // 生产环境使用打包的ffmpeg
+        // production use bundled ffmpeg
         const resourcesPath = process.resourcesPath;
         const platform = process.platform;
         const extension = platform === 'win32' ? '.exe' : '';
@@ -17,26 +17,26 @@ function getBinaryPath(binaryName) {
     }
 }
 
-// 设置ffmpeg路径
+// set ffmpeg path
 const ffmpegPath = getBinaryPath('ffmpeg');
 const ffprobePath = getBinaryPath('ffprobe');
 
 ffmpeg.setFfmpegPath(ffmpegPath);
 ffmpeg.setFfprobePath(ffprobePath);
 
-// 支援的輸入格式
+// supported input formats
 const supportedInputFormats = [
     'mkv', 'mp4', 'avi', 'mov', 'wmv', 'flv', 'webm', 'm4v', 'mpg', 'mpeg', 'ts'
 ];
 
-// 編碼器選項
+// encoder options
 const encoders = {
     'h264': {
         codec: 'libx264',
         options: {
             normal: ['-profile:v', 'high', '-level', '4.2'],
-            hdr: [], // h264 不支持 HDR
-            toHDR: [] // h264 不支持 HDR
+            hdr: [], // h264 does not support HDR
+            toHDR: [] // h264 does not support HDR
         }
     },
     'h265': {
@@ -52,7 +52,7 @@ const encoders = {
                 'hdr-opt=1:repeat-headers=1:colorprim=bt2020:transfer=smpte2084:colormatrix=bt2020nc:master-display=G(13250,34500)B(7500,3000)R(34000,16000)WP(15635,16450)L(10000000,1):max-cll=1000,400'
             ],
             toHDR: [
-                // SDR to HDR 轉換參數
+                // SDR to HDR conversion parameters
                 '-vf', 'zscale=t=linear:npl=100,format=gbrpf32le,zscale=p=bt2020:t=smpte2084:m=bt2020nc:r=tv,format=yuv420p10le',
                 '-color_primaries', 'bt2020',
                 '-color_trc', 'smpte2084',
@@ -62,7 +62,7 @@ const encoders = {
                 'hdr-opt=1:repeat-headers=1:colorprim=bt2020:transfer=smpte2084:colormatrix=bt2020nc:master-display=G(13250,34500)B(7500,3000)R(34000,16000)WP(15635,16450)L(10000000,1):max-cll=1000,400'
             ],
             toSDR: [
-                // HDR to SDR 轉換參數
+                // HDR to SDR conversion parameters
                 '-vf', 'zscale=t=linear:npl=100,format=gbrpf32le,zscale=p=bt709,tonemap=tonemap=hable:desat=0,zscale=t=bt709:m=bt709:r=tv,format=yuv420p'
             ]
         }
@@ -103,7 +103,7 @@ async function getVideoInfo(filePath) {
 }
 
 async function convertVideo(inputPath, outputPath, options = {}) {
-    // 先获取视频信息
+    // get video info
     const videoInfo = await getVideoInfo(inputPath);
     
     return new Promise((resolve, reject) => {
@@ -111,12 +111,12 @@ async function convertVideo(inputPath, outputPath, options = {}) {
         const mainWindow = BrowserWindow.getFocusedWindow();
         let startTime;
         
-        // 获取输入文件名（不含扩展名）和扩展名
+        // get input file name (without extension) and extension
         const inputFileName = path.basename(inputPath, path.extname(inputPath));
         const outputExt = path.extname(inputPath);
-        // 构建新的输出文件名
+        // build new output file name
         const outputFileName = `${inputFileName}-converted${outputExt}`;
-        // 确保输出路径存在并创建完整的输出路径
+        // ensure output path exists and create full output path
         fs.mkdirSync(outputPath, { recursive: true });
         const finalOutputPath = path.join(outputPath, outputFileName);
 
@@ -131,7 +131,7 @@ async function convertVideo(inputPath, outputPath, options = {}) {
         } = options;
 
         try {
-            // 显示当前分辨率
+            // show current resolution
             mainWindow.webContents.send('video-info', {
                 width: videoInfo.width,
                 height: videoInfo.height,
@@ -159,7 +159,7 @@ async function convertVideo(inputPath, outputPath, options = {}) {
 
                 command.outputOptions(baseOptions);
 
-                // HDR 處理邏輯
+                // HDR processing logic
                 if (hdrMode === 'force-hdr' && !videoInfo.isHDR) {
                     command.outputOptions(encoderConfig.options.toHDR);
                 } else if (hdrMode === 'force-sdr' && videoInfo.isHDR) {
@@ -170,7 +170,7 @@ async function convertVideo(inputPath, outputPath, options = {}) {
                     command.outputOptions(encoderConfig.options.normal);
                 }
 
-                // 添加分辨率調整
+                // add resolution adjustment
                 if (resolution !== 'original') {
                     const [width, height] = resolution.split('x').map(Number);
                     command.size(`${width}x${height}`);

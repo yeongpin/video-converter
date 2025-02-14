@@ -37,7 +37,7 @@ app.on('window-all-closed', () => {
     }
 });
 
-// 获取默认输出路径
+// get default output path
 async function getDefaultOutputPath() {
     const downloadsPath = path.join(os.homedir(), 'Downloads', 'output');
     try {
@@ -48,7 +48,7 @@ async function getDefaultOutputPath() {
     return downloadsPath;
 }
 
-// 添加新的IPC处理程序
+// add new IPC handler
 ipcMain.handle('select-output-path', async () => {
     const result = await dialog.showOpenDialog({
         properties: ['openDirectory']
@@ -63,11 +63,11 @@ ipcMain.handle('get-default-output-path', async () => {
     return await getDefaultOutputPath();
 });
 
-// 修改现有的转换处理程序
+// modify existing conversion handler
 ipcMain.handle('convert-video', async (event, { inputPath, outputPath, options }) => {
     console.log('Starting conversion:', { inputPath, outputPath, options });
     try {
-        // 如果没有提供输出路径，使用默认路径
+        // if no output path provided, use default path
         const defaultOutputDir = await getDefaultOutputPath();
         const finalOutputPath = outputPath || defaultOutputDir;
         
@@ -80,7 +80,7 @@ ipcMain.handle('convert-video', async (event, { inputPath, outputPath, options }
     }
 });
 
-// 添加新的 IPC 處理程序
+// add new IPC handler
 ipcMain.handle('get-video-metadata', async (event, path) => {
     return new Promise((resolve, reject) => {
         ffmpeg.ffprobe(path, (err, metadata) => {
@@ -90,7 +90,7 @@ ipcMain.handle('get-video-metadata', async (event, path) => {
     });
 });
 
-// Add window control handlers
+// add window control handlers
 ipcMain.handle('minimize-window', () => {
     const win = BrowserWindow.getFocusedWindow();
     if (win) win.minimize();
@@ -112,7 +112,7 @@ ipcMain.handle('close-window', () => {
     if (win) win.close();
 });
 
-// 添加打开文件和文件夹的处理程序
+// add open file and folder handler
 ipcMain.handle('open-file', async (event, path) => {
     shell.openPath(path);
 });
@@ -121,7 +121,7 @@ ipcMain.handle('open-folder', async (event, path) => {
     shell.showItemInFolder(path);
 });
 
-// 添加外部链接处理程序
+// add external link handler
 ipcMain.handle('open-external-link', async (event, url) => {
     shell.openExternal(url);
 }); 

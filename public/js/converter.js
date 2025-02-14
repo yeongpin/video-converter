@@ -39,7 +39,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     fileInput.addEventListener('change', async (e) => {
         selectedFile = e.target.files[0];
         if (selectedFile) {
-            // 重置所有進度和狀態顯示
+            // reset all progress and status display
             convertBtn.disabled = false;
             progressContainer.style.display = 'none';
             progressBar.style.width = '0%';
@@ -59,7 +59,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                     const height = videoStream.height;
                     currentResolution.textContent = `${width}x${height}`;
                     
-                    // 自動選擇最接近的分辨率選項
+                    // automatically select the closest resolution option
                     const resolutions = {
                         '3840x2160': 3840 * 2160,
                         '2560x1440': 2560 * 1440,
@@ -100,7 +100,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 currentHDR.textContent = 'Unknown';
             }
         } else {
-            // 重置所有狀態
+            // reset all status
             convertBtn.disabled = true;
             status.textContent = '';
             progressContainer.style.display = 'none';
@@ -115,7 +115,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     });
 
-    // 監聽轉換模式變更
+    // listen conversion mode change
     modeRadios.forEach(radio => {
         radio.addEventListener('change', (e) => {
             const isLossless = e.target.value === 'lossless';
@@ -126,7 +126,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
     });
 
-    // 監聽 HDR 選項變更
+    // listen HDR option change
     hdrSelect.addEventListener('change', (e) => {
         const isForceHDR = e.target.value === 'force-hdr';
         hdrWarning.style.display = isForceHDR ? 'block' : 'none';
@@ -144,7 +144,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             const options = {
                 inputPath: selectedFile.path,
-                outputPath: currentOutputPath,  // 使用选择的输出目录
+                outputPath: currentOutputPath,  // use selected output directory
                 options: {
                     encoder: encoderSelect.value,
                     isLossless: document.querySelector('input[name="conversionMode"]:checked').value === 'lossless',
@@ -172,7 +172,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     });
 
-    // 監聽進度更新
+    // listen progress update
     window.electronAPI.onProgress((event, progress) => {
         if (typeof progress === 'object') {
             progressBar.style.width = `${progress.percent}%`;
@@ -181,11 +181,11 @@ document.addEventListener('DOMContentLoaded', async () => {
             progressTime.textContent = `Time: ${progress.time}`;
             progressEta.textContent = `ETA: ${progress.eta}`;
             
-            // 只在有實際大小數據時顯示
+            // only show progress size when there is actual size data
             if (progress.size && progress.size !== '0MB' && progress.size !== 'N/A') {
                 progressSize.textContent = `Size: ${progress.size}`;
             } else {
-                progressSize.textContent = ''; // 如果沒有有效的大小數據，就不顯示
+                progressSize.textContent = ''; // if no valid size data, don't show
             }
             
             if (progress.status === 'Completed!') {
@@ -199,14 +199,14 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     });
 
-    // 監聽錯誤
+    // listen error
     window.electronAPI.onError((event, error) => {
         status.textContent = `Error: ${error}`;
         progressContainer.style.display = 'none';
         convertBtn.disabled = false;
     });
 
-    // 添加更改输出路径的处理
+    // add change output path handler
     document.getElementById('changeOutputPath').addEventListener('click', async () => {
         const newPath = await window.electronAPI.selectOutputPath();
         if (newPath) {
@@ -215,7 +215,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     });
 
-    // 添加对话框事件处理
+    // add dialog event handler
     openFileBtn.addEventListener('click', async () => {
         if (lastOutputPath) {
             await window.electronAPI.openFile(lastOutputPath);
@@ -239,7 +239,7 @@ async function convertVideo() {
   
     const options = {
         inputPath: fileInput.files[0].path,
-        outputPath: currentOutputPath, // 使用选择的输出路径
+        outputPath: currentOutputPath, // use selected output path
         options: {
             encoder: encoderSelect.value,
             isLossless: conversionMode === 'lossless',

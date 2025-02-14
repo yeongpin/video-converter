@@ -75,7 +75,7 @@ window.addEventListener('click', (event) => {
     }
 });
 
-// 添加 GitHub 按钮点击处理
+// add GitHub button click handler
 document.getElementById('githubBtn').addEventListener('click', () => {
     window.electronAPI.openExternalLink('https://github.com/yeongpin/video-converter');
 }); 
