@@ -15,6 +15,7 @@ A modern and efficient video format converter built with Electron and FFmpeg.
 [Download](https://github.com/yeongpin/video-converter/releases) • [Features](#features)
 
 </p>
+</div>
 
 ## 🛠 Tech Stack
 
@@ -77,26 +78,36 @@ A modern and efficient video format converter built with Electron and FFmpeg.
 | Git | Latest stable version |
 
 ### 🛠️ Environment Setup
+
+##### Clone the repository
 ```
-# Clone the repository
 git clone https://github.com/yeongpin/video-converter.git
+```
 
-# Navigate to the project directory
+##### Navigate to the project directory
+```
 cd video-converter
+```
 
-# Install dependencies
+##### Install dependencies
+```
 npm install
+```
 
-# Start the development server
+##### Start the development server
+```
 npm start
 ```
 
 ### 📦 Build Commands
-```
-# Build for your current platform
-npm run build
 
-# Build for specific platforms
+##### Build for your current platform
+```
+npm run build
+```
+
+##### Build for specific platforms
+```
 npm run build:win
 npm run build:mac
 npm run build:linux
@@ -104,7 +115,7 @@ npm run build:linux
 
 ## 📁 Project Structure 
 
-```
+``` plaintext
 video-converter/
 ├── package.json
 ├── README.md
@@ -143,9 +154,12 @@ This project is licensed under the Creative Commons Attribution-NonCommercial-No
 
 ---
 
-<p align="center">Made with ❤️ by <a href="https://github.com/yeongpin">yeongpin</a></p><a href="https://github.com/yeongpin">
-  <img src="https://github.com/yeongpin.png" width="50" height="50" style="border-radius:50%"/>
-</a>
+<p align="center">
+  Made with ❤️ by <a href="https://github.com/yeongpin">yeongpin</a>
+  <img src="https://github.com/yeongpin.png" width="20" height="20" style="border-radius:50%; vertical-align: middle; margin-left: 5px;"/>
+</p>
 
-</div>
+
+
+
 
